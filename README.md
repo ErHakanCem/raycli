@@ -1,6 +1,6 @@
 # RayCLI
 
-`raycli` is a lightweight and modular terminal-based productivity tool inspired by macOS apps like Raycast. It provides a simple launcher to quickly access powerful search utilities using `fzf`, including:
+`raycli` is a lightweight and modular terminal-based productivity tool inspired . It provides a simple launcher to quickly access powerful search utilities using `fzf`, including:
 
 ## ✨ Features
 
