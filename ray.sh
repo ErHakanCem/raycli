@@ -1,49 +1,51 @@
 #!/bin/bash
-
-# Ensure gum and fzf are installed
 command -v fzf >/dev/null || { echo "fzf is not installed"; exit 1; }
 command -v gum >/dev/null || { echo "gum is not installed"; exit 1; }
 
-# Title (like Raycast search)
-gum style --foreground 212 --border double --margin "1 2" --padding "1 2" --align center "🚀 Quick Command Launcher"
+# Main Menu
+MAIN=$(printf "\U0001F4C1 Files\n\U0001F9E0 Notes\n\U0001F4CB Clipboard\n⚙️ System\n\U0001F30D Web\n" | fzf --prompt="Choose category: ")
 
-# List of actions
-ACTION=$(printf "%s\n" \
-  "📝 Open Logseq" \
-  "🔍 Search Files" \
-  "📁 Open Downloads" \
-  "📋 Copy Date to Clipboard" \
-  "🌐 Open Google" \
-  "🛑 Shutdown Prompt" \
-  | fzf --prompt="Select Action: " --height=40% --border)
-
-# Handle selection
-case "$ACTION" in
-  "📝 Open Logseq")
-    open -a "Logseq"
+case "$MAIN" in
+  "\U0001F4C1 Files")
+    ACTION=$(printf "Open Downloads\nFind Recent Files\n" | fzf)
+    case "$ACTION" in
+      "Open Downloads") open ~/Downloads ;;
+      "Find Recent Files") find ~ -type f -mtime -2 | fzf ;;
+    esac
     ;;
-
-  "🔍 Search Files")
-    QUERY=$(gum input --placeholder "Enter search term")
-    rg "$QUERY" ~
+  "\U0001F9E0 Notes")
+    ACTION=$(printf "Open Journal\nCreate New Note\nSearch Notes\n" | fzf)
+    case "$ACTION" in
+      "Open Journal") open ~/logseq/journals/$(date +%Y-%m-%d).md ;;
+      "Create New Note")
+        TITLE=$(gum input --placeholder "Note title")
+        touch ~/notes/"$TITLE.md" && open ~/notes/"$TITLE.md"
+        ;;
+      "Search Notes")
+        rg "$(gum input --placeholder 'search term')" ~/notes
+        ;;
+    esac
     ;;
-
-  "📁 Open Downloads")
-    open ~/Downloads
+  "\U0001F4CB Clipboard")
+    ACTION=$(printf "Show Clipboard\nCopy Date\n" | fzf)
+    case "$ACTION" in
+      "Show Clipboard") pbpaste | gum pager ;;
+      "Copy Date") date "+%Y-%m-%d" | pbcopy && echo "\U0001F4C5 Date copied!" ;;
+    esac
     ;;
-
-  "📋 Copy Date to Clipboard")
-    date "+%Y-%m-%d" | pbcopy
-    echo "📅 Date copied to clipboard!"
+  "⚙️ System")
+    ACTION=$(printf "Battery Status\nDisk Usage\nRAM Info\n" | fzf)
+    case "$ACTION" in
+      "Battery Status") pmset -g batt ;;
+      "Disk Usage") df -h ;;
+      "RAM Info") vm_stat ;;
+    esac
     ;;
-
-  "🌐 Open Google")
-    open "https://google.com"
-    ;;
-
-  "🛑 Shutdown Prompt")
-    CONFIRM=$(gum confirm "Really shut down?")
-    [ "$CONFIRM" = "true" ] && sudo shutdown -h now
+  "\U0001F30D Web")
+    ACTION=$(printf "Open Google\nOpen GitHub\n" | fzf)
+    case "$ACTION" in
+      "Open Google") open https://google.com ;;
+      "Open GitHub") open https://github.com ;;
+    esac
     ;;
 esac
-
